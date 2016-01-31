@@ -1,5 +1,6 @@
 #include "point.h"
 
+/*
 // Critère de comparaison entre 2 points
 int point_trier_simple(t_point* p1,t_point* p2)
 {
@@ -10,6 +11,7 @@ int point_trier_simple(t_point* p1,t_point* p2)
     else
         return 0;
 }
+*/
 
 // retourne 1 si le point correspond à ce qu'on cherche
 // 0 sinon

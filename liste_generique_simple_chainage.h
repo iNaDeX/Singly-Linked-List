@@ -17,6 +17,11 @@
 // dont le prototype serait par exemple:
 // void point_afficher(t_point* p);
 
+// ATTENTION: Fonction de comparaison entre 2 elements doit etre du type:
+// int point_trier(t_point** pp1,t_point** pp2);
+// en effet, la liste stocke des t_point*, et qsort passe toujours à la fonction de comparaison des pointeurs sur les données
+// donc la fonction de comparaison doit recevoir des t_point**
+
 /*
 Par rapport à une liste simple chainage double ancrage, une liste double chainage double ancrage aurait permis:
 
@@ -28,6 +33,8 @@ Par rapport à une liste simple chainage double ancrage, une liste double chainag
 // Inclusion des librairies nécessaires au fonctionnement du module
 #include <stdio.h>
 #include <stdlib.h>
+
+#define MODE_DEBUG 1
 
 /// Définition des structures
 typedef struct maillon

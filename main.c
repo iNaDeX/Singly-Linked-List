@@ -19,13 +19,13 @@ int main()
     elem2 = point_creer(3,3);
     liste_ajout_queue(maliste, elem2);
 
-    printf("affichage maliste\n");
+    printf("affichage maliste, on doit avoir 3 points (1,1),(2,2),(3,3)\n");
     liste_afficher(maliste, (tpf_afficher)point_afficher);
 
     elem2 = point_creer(4,4);
     liste_ajout_avant(maliste,elem2,elem);
 
-    printf("affichage maliste\n");
+    printf("affichage maliste, on doit avoir 4 points (4,4),(1,1),(2,2),(3,3)\n");
     liste_afficher(maliste, (tpf_afficher)point_afficher);
 
     elem = liste_recup_queue(maliste);
@@ -33,8 +33,20 @@ int main()
     point_afficher(elem);
     point_detruire(elem);
 
-    printf("affichage maliste\n");
+    printf("affichage maliste, on doit avoir 3 points (4,4),(1,1),(2,2)\n");
     liste_afficher(maliste, (tpf_afficher)point_afficher);
+
+    liste_trier(maliste,(tpf_trier)point_trier);
+    printf("affichage maliste triee, on doit avoir 3 points (1,1),(2,2),(4,4)\n");
+    liste_afficher(maliste, (tpf_afficher)point_afficher);
+
+    elem = point_creer(3,3);
+    liste_ajout_trie(maliste,elem,(tpf_trier)point_trier);
+
+    printf("affichage maliste, on doit avoir 4 points (1,1),(2,2),(3,3),(4,4)\n");
+    liste_afficher(maliste, (tpf_afficher)point_afficher);
+
+
 
     liste_detruire(maliste, (tpf_detruire)point_detruire);
 

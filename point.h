@@ -16,8 +16,10 @@ typedef struct point
 // 0 sinon
 int point_chercher(t_point* p);
 
+/*
 // Critère de comparaison entre 2 points
 int point_trier_simple(t_point* p1,t_point* p2);
+*/
 
 // Critère de tri en passant par des t_point** (nécessaire pour l'appel à qsort ici)
 int point_trier(t_point** pp1,t_point** pp2);

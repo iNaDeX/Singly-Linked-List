@@ -128,42 +128,48 @@ int liste_vide(t_liste* lst)
 // Accès élément en tête
 void* liste_elem_tete(t_liste* lst)
 {
-    return lst->p_tete->elem;
+    if(!liste_vide(lst)) {
+        return lst->p_tete->elem;
+    }
+    else {
+        #if MODE_DEBUG==1
+            printf("DEBUG (liste_generique): tentative d'acces a l'element de tete d'une liste vide\n");
+        #endif // MODE_DEBUG
+        return NULL;
+    }
 }
 
 // Accès élément en queue
 void* liste_elem_queue(t_liste* lst)
 {
-    return lst->p_queue->elem;
+    if(!liste_vide(lst)) {
+        return lst->p_queue->elem;
+    }
+    else {
+        #if MODE_DEBUG==1
+            printf("DEBUG (liste_generique): tentative d'acces a l'element de queue d'une liste vide\n");
+        #endif // MODE_DEBUG
+        return NULL;
+    }
 }
 
 // Accès élément courant
 void* liste_elem_courant(t_liste* lst)
 {
-    return lst->p_courant->elem;
+     if(lst->p_courant != NULL) {
+        return lst->p_courant->elem;
+    }
+    else {
+        #if MODE_DEBUG==1
+            printf("DEBUG (liste_generique): le maillon courant est NULL et on tente d'acceder a sa donnee\n");
+        #endif // MODE_DEBUG
+        return NULL;
+    }
 }
 
 void liste_supprimer_tete(t_liste* lst, tpf_detruire detruire)
 {
-    // NOUVELLE VERSION
     detruire(liste_recup_tete(lst));
-
-    // ANCIENNE VERSION, Code répétitif, on aurait pu utiliser liste_recup_tete() puis free les données de la tête.
-    /*t_maillon* tmp;
-
-    if(!liste_vide(lst))
-    {
-        tmp = lst->p_tete->p_suiv;
-        detruire(lst->p_tete->elem); // on détruit les données du maillon
-        free(lst->p_tete); // on détruit le maillon
-        lst->p_tete = tmp; // on fait pointer la tête sur le successeur du maillon détruit
-        lst->longueur = lst->longueur -1; // on diminue la longueur de la liste
-        nb_maillons_liberes++;  // on augmente le compteur de bilan mémoire
-    }
-    else
-    {
-        printf("erreur, impossible supprimer tete, la liste est vide\n");
-    }*/
 }
 
 // Initialiser un parcours
@@ -177,7 +183,6 @@ int liste_encore(t_liste* lst)
 {
     // attention ne pas faire lst->p_courant->psuiv sinon on réagit un niveau trop tôt
     return (lst->p_courant != NULL) ? 1 : 0;
-
 }
 
 // Déplacement du courant au suivant
@@ -225,41 +230,7 @@ void liste_fusionner(t_liste* lst1, t_liste* lst2, tpf_copier copier)
 
 void liste_supprimer_queue(t_liste* lst, tpf_detruire detruire)
 {
-    // NOUVELLE VERSION
     detruire(liste_recup_queue(lst));
-
-    // ANCIENNE VERSION, Code répétitif, on aurait pu utiliser liste_recup_queue() puis free les données de la queue.
-    /*t_maillon* tmp;
-
-    if (liste_vide(lst)) // cas de la liste vide
-    {
-        printf("liste vide, rien à supprimer\n");
-    }
-
-    else if (liste_taille(lst) == 1) // cas de la liste à un élément
-    {
-        detruire(lst->p_tete->elem);
-        free(lst->p_tete);
-        lst->p_tete = NULL;
-        lst->p_queue = NULL;
-        lst->longueur = lst->longueur -1; // on diminue la longueur de la liste
-        nb_maillons_liberes++;  // on augmente le compteur de bilan mémoire
-    }
-
-    else // cas de la liste à plus d'un élément
-    {
-        tmp = lst->p_tete;
-        while(tmp->p_suiv->p_suiv != NULL) // autorisé car on sait qu'il y a au moins 2 élements dans la liste
-        {
-            tmp = tmp->p_suiv;
-        }
-        detruire(tmp->p_suiv->elem); // on détruit les données du maillon de queue
-        free(tmp->p_suiv); // on détruit le maillon de queue
-        tmp->p_suiv = NULL; // on indique que l'avant dernier maillon devient le dernier
-        lst->p_queue = tmp; // on met à jour la queue
-        lst->longueur = lst->longueur -1; // on diminue la longueur de la liste
-        nb_maillons_liberes++;  // on augmente le compteur de bilan mémoire
-    }*/
 }
 
 void liste_dereferencer_tete(t_liste* lst)
@@ -321,9 +292,8 @@ void liste_trier(t_liste* lst, tpf_trier trier)
     }
     else
     {
-        //printf("tri inutile, on traite une liste de moins de 2 elements\n");
+        //tri inutile, on traite une liste de moins de 2 elements
     }
-
 }
 
 void liste_ajout_trie(t_liste* lst, void* elem, tpf_trier trier)
@@ -336,6 +306,14 @@ void liste_ajout_trie(t_liste* lst, void* elem, tpf_trier trier)
 
     t_maillon* pprec = NULL;
 
+    void** ptr_elem = &elem;
+    void* elem_tete = liste_elem_tete(lst);
+    void** ptr_elem_tete = &elem_tete;
+    void* elem_queue = liste_elem_queue(lst);
+    void** ptr_elem_queue = &elem_queue;
+    void* elem_courant = NULL;
+    void** ptr_elem_courant = NULL;
+
     // cas de l'ajout dans une liste vide
     if(liste_taille(lst) == 0)
     {
@@ -343,12 +321,13 @@ void liste_ajout_trie(t_liste* lst, void* elem, tpf_trier trier)
     }
 
     // cas de l'ajout en tête ( = si l'élément à ajouter est censé être placé avant la tete )
-    else if(  (trier(elem,liste_elem_tete(lst)))  <   0   )
+    //else if(  (trier( &(elem),&(liste_elem_tete(lst))) )  <   0   )
+    else if(  trier(ptr_elem,ptr_elem_tete)  <   0   )
     {
         liste_ajout_tete(lst,elem);
     }
     // cas de l'ajout en queue ( = si l'élément à ajouter est censé être placé après la queue )
-    else if( (trier(elem,liste_elem_queue(lst)))  >  0 )
+    else if( trier(ptr_elem,ptr_elem_queue)  >  0 )
     {
         liste_ajout_queue(lst,elem);
     }
@@ -368,7 +347,9 @@ void liste_ajout_trie(t_liste* lst, void* elem, tpf_trier trier)
         pprec = lst->p_tete;
         for(liste_demarrer(lst); liste_encore(lst); liste_suivant(lst))
         {
-            if(trier(elem,liste_elem_courant(lst)) < 0 )
+            elem_courant = liste_elem_courant(lst);
+            ptr_elem_courant = &elem_courant;
+            if( trier(ptr_elem,ptr_elem_courant) < 0 )
             {
                 nouv->p_suiv = lst->p_courant;
                 pprec->p_suiv = nouv;
@@ -408,7 +389,9 @@ void liste_supprimer_precis(t_liste* lst, void* elem, tpf_detruire detruire)
 
     if(liste_taille(lst) == 0)
     {
-        printf("GROS BUG: L'element qu'on cherche ne pourra pas etre trouve car la liste est vide\n");
+        #if MODE_DEBUG==1
+            printf("DEBUG (liste_generique): suppression d'un element precis impossible car la liste est vide\n");
+        #endif
     }
     else if(liste_elem_tete(lst) == elem) // on compare les adresses pour savoir si on est sur le bon maillon
     {
@@ -434,7 +417,8 @@ void liste_supprimer_precis(t_liste* lst, void* elem, tpf_detruire detruire)
         {
             trouve = 1;
 
-            //new
+            //on s'assure que lst->p_courant pointe a tout moment vers un maillon valide, donc pas vers le maillon
+            //que l'on va supprimer
             if(lst->p_courant == tmp->p_suiv){
                 lst->p_courant = tmp;
             }
@@ -451,7 +435,9 @@ void liste_supprimer_precis(t_liste* lst, void* elem, tpf_detruire detruire)
 
     if (trouve == 0) // DEBUG
     {
-        printf("GROS BUG, on a parcouru toute la liste sans tomber sur l'element qu'on cherchait a supprimer\n");
+        #if MODE_DEBUG==1
+            printf("DEBUG (liste_generique): bug: l'element qui devait etre supprime n'a pas ete trouve dans la liste\n");
+        #endif
     }
 }
 
@@ -468,7 +454,9 @@ void liste_dereferencer_precis(t_liste* lst, void* elem)
 
     if(liste_taille(lst) == 0)
     {
-        printf("GROS BUG: L'element qu'on cherche ne pourra pas etre trouve car la liste est vide\n");
+        #if MODE_DEBUG==1
+            printf("DEBUG (liste_generique): dereferencement d'un element precis impossible car la liste est vide\n");
+        #endif
     }
     else if(liste_elem_tete(lst) == elem) // on compare les adresses pour savoir si on est sur le bon maillon
     {
@@ -494,7 +482,8 @@ void liste_dereferencer_precis(t_liste* lst, void* elem)
         {
             trouve = 1;
 
-            //new
+            //on s'assure que lst->p_courant pointe a tout moment vers un maillon valide, donc pas vers le maillon
+            //que l'on va supprimer
             if(lst->p_courant == tmp->p_suiv){
                 lst->p_courant = tmp;
             }
@@ -510,7 +499,9 @@ void liste_dereferencer_precis(t_liste* lst, void* elem)
 
     if (trouve == 0) // DEBUG
     {
-        printf("GROS BUG, on a parcouru toute la liste sans tomber sur l'element qu'on cherchait a supprimer\n");
+        #if MODE_DEBUG==1
+            printf("DEBUG (liste_generique): bug: l'element qui devait etre dereference n'a pas ete trouve dans la liste\n");
+        #endif
     }
 }
 
@@ -545,12 +536,15 @@ void liste_ajout_avant(t_liste* lst, void* elem_a_inserer, void* elem_ref)
     // _ l'ajout au milieu
 
     t_maillon* pprec = NULL;
+    int trouve = 0; // DEBUG
 
     // cas de l'ajout dans une liste vide ou d'un élément de référence à NULL
     if((liste_taille(lst) == 0) || (elem_ref == NULL))
     {
-        printf("GROS BUG, on ne peut pas ajouter avant l'element demande car il n'est pas dans la liste: la liste est vide\n");
-        printf("Ou bien tu as envoye NULL comme element de reference.\n");
+        #if MODE_DEBUG==1
+            printf("DEBUG (liste_generique): BUG: la liste est vide, impossible d'ajouter avant l'element demande car il ne sera pas dans la liste\n");
+            printf("DEBUG (liste_generique): BUG: ou bien l'element de reference envoye vaut NULL\n");
+        #endif
     }
 
     // cas de l'ajout en tête ( = si l'élément à ajouter est censé être placé avant la tete )
@@ -576,11 +570,18 @@ void liste_ajout_avant(t_liste* lst, void* elem_a_inserer, void* elem_ref)
         {
             if(liste_elem_courant(lst) == elem_ref)
             {
+                trouve=1;
                 nouv->p_suiv = lst->p_courant;
                 pprec->p_suiv = nouv;
                 break; // on arrete de parcourir la liste, c'est bon, on a placé notre élément
             }
             pprec = lst->p_courant;
+        }
+        if(trouve==0)
+        {
+            #if MODE_DEBUG==1
+                printf("DEBUG (liste_generique): BUG: impossible d'ajouter avant l'element demande car il n'est pas dans la liste\n");
+            #endif
         }
     }
 }
@@ -592,7 +593,8 @@ void* liste_recup_tete(t_liste* lst)
 
     if(!liste_vide(lst))
     {
-        // new
+        //on s'assure que lst->p_courant pointe a tout moment vers un maillon valide, donc pas vers le maillon
+        //que l'on va supprimer
         if(lst->p_courant == lst->p_tete) {
             lst->p_courant = lst->p_tete->p_suiv;
         }
@@ -609,7 +611,9 @@ void* liste_recup_tete(t_liste* lst)
     }
     else
     {
-        //printf("erreur, impossible supprimer tete, la liste est vide\n");
+        #if MODE_DEBUG==1
+            printf("DEBUG (liste_generique): BUG: impossible supprimer tete, la liste est vide\n");
+        #endif
     }
 
     return elem_tete;
@@ -622,12 +626,15 @@ void* liste_recup_queue(t_liste* lst)
 
     if (liste_vide(lst)) // cas de la liste vide
     {
-        printf("liste vide, rien à supprimer\n");
+         #if MODE_DEBUG==1
+            printf("DEBUG (liste_generique): BUG: liste vide impossible de recuperer l'elem de queue\n");
+        #endif
     }
 
     else if (liste_taille(lst) == 1) // cas de la liste à un élément
     {
-        //new
+        //on s'assure que lst->p_courant pointe a tout moment vers un maillon valide, donc pas vers le maillon
+        //que l'on va supprimer
         if(lst->p_courant == lst->p_tete) {
             lst->p_courant = NULL;
         }
@@ -646,7 +653,8 @@ void* liste_recup_queue(t_liste* lst)
         {
             tmp = tmp->p_suiv;
         }
-        //new
+        //on s'assure que lst->p_courant pointe a tout moment vers un maillon valide, donc pas vers le maillon
+        //que l'on va supprimer
         if(lst->p_courant == tmp->p_suiv){
             lst->p_courant = tmp;
         }
